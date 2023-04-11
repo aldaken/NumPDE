@@ -267,3 +267,7 @@ TEST(MinimalGraphSurface, graphMinimalSurface2) {
 }
 
 }  // namespace MinimalGraphSurface::test
+
+TEST(MinimalGraphSurface, coeffTensorA) {}
+TEST(MinimalGraphSurface, coeffScalarc) {}
+TEST(MinimalGraphSurface, computeNewtonCorrection) {}
