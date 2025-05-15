@@ -25,7 +25,7 @@
 # This is a gate file to Hunter package manager.
 # Include this file using `include` command and add package you need, example:
 #
-#     cmake_minimum_required(VERSION 3.2)
+#     cmake_minimum_required(VERSION 3.10)
 #
 #     include("cmake/HunterGate.cmake")
 #     HunterGate(
