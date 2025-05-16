@@ -8,13 +8,26 @@ stages: # List of stages for jobs, and their order of execution
 variables:
   HUNTER_ROOT: "$CI_PROJECT_DIR/hunter"  # Set the hunter root directory within project (allows caching/artifacts of dependencies)
   CMAKE_FLAGS: "-DHOMEWORKS=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DHUNTER_CONFIGURATION_TYPES=$BUILD_TYPE -Wdev"
+  # Ubuntu 22.04with clang tools v14 and build essentials
+  # (cmake, make, gcc)
+  # We use a podman runner with this image for most
+  # Linux jobs in order to have control over the version
+  # of the clang tools (format & tidy): different major
+  # versions result in different, conflicting autoformats.
+  LINUX_IMAGE: "gitlab.math.ethz.ch:5050/ralfh/npderepo/ci-llvm-build:latest"
 
 clang-format-job:
+    image: $LINUX_IMAGE
+    # Because podman virtual env setup fails sometimes, all jobs
+    # using the image can do 2 retries for now as a soft hotfix
+    retry:
+      max: 2
+      when: runner_system_failure
     stage: format
     variables:
       CLANG_FORMAT_FLAGS: "-r --clang-format-executable clang-format --color always"
     tags: 
-      - linux
+      - podman
     script:
       - echo "Checking if the code is well formatted"
       - clang-format --version
@@ -26,6 +39,10 @@ clang-format-job:
       - $CI_PROJECT_DIR/scripts/ci/run-clang-format.py $CLANG_FORMAT_FLAGS $CI_PROJECT_DIR/lecturecodes/
 
 get-dependencies-job-linux:
+    image: $LINUX_IMAGE
+    retry:
+      max: 2
+      when: runner_system_failure
     stage: get-dependencies
     variables:
       COMPILER: "g++"
@@ -36,7 +53,7 @@ get-dependencies-job-linux:
       paths:
         - $HUNTER_ROOT
     tags:
-      - linux
+      - podman
     script:
       - echo "Getting dependencies"
       - mkdir -p $CI_PROJECT_DIR/build_linux
@@ -73,6 +90,10 @@ get-dependencies-job-mac:
       expire_in: 2 hours
 
 compile-job-linux:
+    image: $LINUX_IMAGE
+    retry:
+      max: 2
+      when: runner_system_failure
     stage: build-and-tidy
     variables:
       COMPILER: "g++"
@@ -83,7 +104,7 @@ compile-job-linux:
       paths:
         - $HUNTER_ROOT
     tags:
-      - linux
+      - podman
     needs:
       - get-dependencies-job-linux
     dependencies:
@@ -142,9 +163,8 @@ compile-job-debug-linux:
     needs:
       - clang-format-job # run this job parallel to the get-dependencies-jobs
     script:
-      - mkdir -p $CI_PROJECT_DIR/build_linux
-
-      - cd $CI_PROJECT_DIR/build_linux
+      - mkdir -p $CI_PROJECT_DIR/build_linux_debug
+      - cd $CI_PROJECT_DIR/build_linux_debug
       - export CXX=$COMPILER
       - echo $CXX
       - cmake $CMAKE_FLAGS -DCMAKE_CXX_FLAGS_DEBUG=$CXX_FLAGS ..
@@ -153,6 +173,10 @@ compile-job-debug-linux:
       - make -j $(nproc)
 
 clang-tidy-job:
+    image: $LINUX_IMAGE
+    retry:
+      max: 2
+      when: runner_system_failure
     stage: build-and-tidy
     variables:
       COMPILER: "g++"
@@ -163,7 +187,7 @@ clang-tidy-job:
       paths:
         - $HUNTER_ROOT
     tags: 
-      - linux
+      - podman
     needs:
       - get-dependencies-job-linux
     dependencies:
@@ -211,9 +235,13 @@ test-job-mac:
       - $CI_PROJECT_DIR/scripts/ci/run_lecturecodes.sh
 
 test-job-linux:
+    image: $LINUX_IMAGE
+    retry:
+      max: 2
+      when: runner_system_failure
     stage: test
     tags:
-      - linux
+      - podman
     needs:
       - compile-job-linux
     dependencies:

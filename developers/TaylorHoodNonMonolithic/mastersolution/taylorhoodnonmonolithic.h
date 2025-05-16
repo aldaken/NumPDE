@@ -135,8 +135,10 @@ buildStokesLSE(std::shared_ptr<const lf::mesh::Mesh> mesh_p, FFUNCTOR &&force) {
   }
   // Modify linear system of equations and r.h.s. vector phi\_x
   lf::assemble::FixFlaggedSolutionComponents<double>(
-      [&dof_bd_flags](lf::assemble::glb_idx_t dof_idx)
-          -> std::pair<bool, double> { return {dof_bd_flags[dof_idx], 0.0}; },
+      [&dof_bd_flags](
+          lf::assemble::glb_idx_t dof_idx) -> std::pair<bool, double> {
+        return {dof_bd_flags[dof_idx], 0.0};
+      },
       A_velo_comp, phi_x);
   // IV. Aseemble the matrices $\VB_x$ and $\VB_y$
   // Initialize lowest-order Lagrange FE space, p=1
@@ -263,4 +265,3 @@ Eigen::Matrix<double, Eigen::Dynamic, 6> monitorUzawaConvergence(
     std::shared_ptr<const lf::mesh::Mesh> mesh_p, bool print = false);
 
 }  // namespace TaylorHoodNonMonolithic
-

@@ -17,6 +17,7 @@ namespace DebuggingFEM {
 
 class EntityMatrixProvider {
  public:
+  virtual ~EntityMatrixProvider() = default;
   virtual bool isActive(const lf::mesh::Entity &cell) = 0;
   virtual Eigen::Matrix<double, 6, 6> Eval(const lf::mesh::Entity &cell) = 0;
 };
