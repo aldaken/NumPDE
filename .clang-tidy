@@ -75,8 +75,8 @@ Checks: '
     readability-static-accessed-through-instance,
     readability-string-compare,
     readability-use-std-min-max,
-    -clang-analyzer-security.FloatLoopCounter
-    -clang-analyzer-optin.portability.UnixAPI
+    -clang-analyzer-security.FloatLoopCounter,
+    -clang-analyzer-optin.portability.UnixAPI,
     -clang-analyzer-unix.Malloc
     '
 # exclusions of some clang-analyzer checks are
@@ -84,7 +84,9 @@ Checks: '
 
 WarningsAsErrors: '*' # treat all warnings as errors
 HeaderFilterRegex: '(include|developers)/.*\.h$' # tells clang-tidy which header files should have unsupressed warnings (ony ours)
-FormatStyle: file # format from .clang-tidy file
+FormatStyle: file # format from .clang-format file
 UseColor: true
 ExtraArgs: ['-DEIGEN_INTERNAL_DEBUGGING'] # was there before, unsure what it does
-CheckOptions: []  # empty for now
+CheckOptions:
+  - key: bugprone-reserved-identifier.AllowedIdentifiers
+    value: '_USE_MATH_DEFINES' # It's normal to define this reserved identifier when working with <cmath>

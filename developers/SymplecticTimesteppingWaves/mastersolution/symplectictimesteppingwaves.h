@@ -95,7 +95,7 @@ class SympTimestepWaveEq {
   //====================
 #endif
 };  // class SympTimestepWaveEq
-    /* SAM_LISTING_END_3 */
+/* SAM_LISTING_END_3 */
 
 /* Implementing member functions of class SympTimestepWaveEq */
 /* SAM_LISTING_BEGIN_9 */

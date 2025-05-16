@@ -45,7 +45,8 @@ TEST(FVMShallowWater, EVTest) {
   Eigen::Matrix2d DF{sweJacobian(u)};
   Eigen::EigenSolver<Eigen::Matrix2d> eigensolver(DF);
   const Eigen::Vector2d ref_ev = eigensolver.eigenvalues().real();
-  const Eigen::Matrix2d ref_EV = eigensolver.eigenvectors().real();
+  [[maybe_unused]] const Eigen::Matrix2d ref_EV =
+      eigensolver.eigenvectors().real();
   auto [l1, l2] = sweLambdas(u);
   const Eigen::Vector2d lambda{l1, l2};
   EXPECT_NEAR(
@@ -272,8 +273,8 @@ TEST(FVMShallowWater, solveSWE) {
   auto u0 = [](double x) -> Eigen::Vector2d {
     if (x > 0 && x < 1)
       return (Eigen::Vector2d() << 1. - x * (1. - x), 1.).finished();
-    else
-      return (Eigen::Vector2d() << 1., 0.).finished();
+
+    return (Eigen::Vector2d() << 1., 0.).finished();
   };
   // Recording intermediate approximations
   auto res =

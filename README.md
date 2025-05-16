@@ -160,6 +160,26 @@ For every commit, a pipeline will:
 ### clang-format
 Before pushing, you can automatically apply the formatting standard by running `scripts/apply-clang-format.sh` *from the root of the repository*.
 
+**NOTE**:
+> Different versions of `clang-format` will result in different formattings given the same configuration (in file `.clang-format`)
+> Because of this **the pipeline may fail if you use a different version than the gitlab runners**.
+> The easiest way to avoid this is by using [pre-commit](https://pre-commit.com) with the supplied `.pre-commit-config.yaml`.
+
+#### Installing pre-commit hook for automatic formatting
+[pre-commit](https://pre-commit.com) is a lightweight python package. Install it with `pip`:
+```bash
+pip install pre-commit
+```
+Afterwards, you should be able to install the configured git hook by running
+```bash
+pre-commit install
+```
+from the **root of the repository**. This also installs the current version of `clang-format` used by this repo.
+
+From now on *whenever you commit new code*, the changes will be checked for formatting.
+If there are format issues, *will cancel* and the the files will be reformatted.
+If the automatic format didn't break anything, you can just redo the commit.
+
 ### clang-tidy
 The list of checks done by `clang-tidy` can be seen in the `.clang-tidy` config file. We treat warnings as errors so expect the pipeline to fail when pushing code for the first time.
 The list of checks is a work in progress, so feel free to suggest adding/removing one (e.g. if a check causes a lot of false positives or seems overly strict).
