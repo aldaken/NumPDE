@@ -17,7 +17,7 @@ namespace LinearFE1D {
 // Calculate the matrix entries corresponding to the Galerkin matrix
 // of the Laplace operator with non-constant coefficient function alpha
 // using composite midpoint integration rule. The entries are stored in
-// the Eigen triplet data structure.
+// the Eigen triplet data structure (COO sparse matrix format).
 /* SAM_LISTING_BEGIN_1 */
 template <typename FUNCTOR1>
 std::vector<Eigen::Triplet<double>> computeA(const Eigen::VectorXd &mesh,
@@ -27,11 +27,11 @@ std::vector<Eigen::Triplet<double>> computeA(const Eigen::VectorXd &mesh,
   // Initializing the vector of triplets whose size corresponds to the
   // number of entries in a (N+1) x (N+1) tridiagonal (band) matrix
   std::vector<Eigen::Triplet<double>> triplets;
+  // Maximal size of vector; avoids intermediate allocations
   triplets.reserve(3 * N + 1);
-
 #if SOLUTION
-  // Some tool variables
-  double diag, off_diag;
+  // Some auxiliary variables
+  double diag, off_diag;     // matrix entries
   double dx_left, dx_right;  // cell widths
 
   /* Computing diagonal entries */
@@ -64,7 +64,6 @@ std::vector<Eigen::Triplet<double>> computeA(const Eigen::VectorXd &mesh,
   // Your code goes here
   //====================
 #endif
-
   return triplets;
 }  // computeA
 /* SAM_LISTING_END_1 */
@@ -156,6 +155,7 @@ template <typename FUNCTOR1, typename FUNCTOR2>
 Eigen::VectorXd solveA(const Eigen::VectorXd &mesh, FUNCTOR1 &&gamma,
                        FUNCTOR2 &&f) {
   // Nodes are indexed as 0=x_0 < x_1 < ... < x_N = 1
+  // Note: What is called N here, is M in the project description!
   unsigned N = mesh.size() - 1;
   // Initializations (notice initialization with zeros here)
   Eigen::VectorXd u = Eigen::VectorXd::Zero(N + 1);  // solution vec
@@ -174,7 +174,7 @@ Eigen::VectorXd solveA(const Eigen::VectorXd &mesh, FUNCTOR1 &&gamma,
   // I.iii Assemble the sparse matrices
   A.setFromTriplets(triplets_A.begin(), triplets_A.end());
   M.setFromTriplets(triplets_M.begin(), triplets_M.end());
-  L = A + M;  // Full Galerkin matrix of the LSE
+  L = A + M;  // Full Galerkin matrix of the LSE \Label[line]{SAApM}
 #else
   //====================
   // Your code goes here
