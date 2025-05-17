@@ -1,6 +1,7 @@
 #include <lf/assemble/assemble.h>
 #include <lf/mesh/utils/utils.h>
 #include <lf/uscalfe/uscalfe.h>
+
 #include <tuple>
 
 namespace LeapfrogDissipativeWave {
@@ -51,4 +52,4 @@ computeGalerkinMatrices(
 }
 /* SAM_LISTING_END_1 */
 
-} // namespace LeapfrogDissipativeWave
+}  // namespace LeapfrogDissipativeWave

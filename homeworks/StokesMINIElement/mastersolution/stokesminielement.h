@@ -20,6 +20,7 @@
 
 #include <Eigen/Core>
 #include <Eigen/Sparse>
+#include <iomanip>
 #include <iostream>
 
 namespace StokesMINIElement {  // namespace StokesMINIElement
@@ -77,7 +78,7 @@ void testCvgSimpleFEM(unsigned int refsteps = 5);
  * @brief Convergence test for simple Stokes FEM
  */
 void testCvgMINIFEM(unsigned int refsteps = 5);
-  
+
 }  // namespace StokesMINIElement
 
 #endif

@@ -94,11 +94,11 @@ Eigen::Matrix<double, Eigen::Dynamic, 6> monitorUzawaConvergence(
   auto fes_LO2 =
       std::make_shared<lf::uscalfe::FeSpaceLagrangeO2<double>>(mesh_p);
   const lf::assemble::DofHandler &dofh_LO2{fes_LO2->LocGlobMap()};
-  const lf::assemble::size_type n_LO2 = dofh_LO2.NumDofs();
+  [[maybe_unused]] const lf::assemble::size_type n_LO2 = dofh_LO2.NumDofs();
   auto fes_LO1 =
       std::make_shared<lf::uscalfe::FeSpaceLagrangeO1<double>>(mesh_p);
   const lf::assemble::DofHandler &dofh_LO1{fes_LO1->LocGlobMap()};
-  const lf::assemble::size_type n_LO1 = dofh_LO1.NumDofs();
+  [[maybe_unused]] const lf::assemble::size_type n_LO1 = dofh_LO1.NumDofs();
 
   // Force functor (rotational force)
   auto force = [](Eigen::Vector2d x) -> Eigen::Vector2d {

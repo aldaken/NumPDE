@@ -164,4 +164,13 @@ bool testZeroIncidenceMatrixProduct(const lf::mesh::Mesh &mesh) {
 }
 /* SAM_LISTING_END_3 */
 
+/* SAM_LISTING_BEGIN_4 */
+Eigen::SparseMatrix<int> computeHodgeLaplaceMatrix(const lf::mesh::Mesh &mesh) {
+  // Store cell-edge incidence matrix here
+  Eigen::SparseMatrix<int, Eigen::RowMajor> L;
+
+  return L;
+}
+/* SAM_LISTING_END_4 */
+
 }  // namespace IncidenceMatrices

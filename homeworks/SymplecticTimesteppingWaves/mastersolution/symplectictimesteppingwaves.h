@@ -83,7 +83,7 @@ class SympTimestepWaveEq {
   Eigen::SparseMatrix<double> M_;  // Galerkin Matrix for boundary integral
   Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver_M_;
 };  // class SympTimestepWaveEq
-    /* SAM_LISTING_END_3 */
+/* SAM_LISTING_END_3 */
 
 /* Implementing member functions of class SympTimestepWaveEq */
 /* SAM_LISTING_BEGIN_9 */

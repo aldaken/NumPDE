@@ -18,7 +18,7 @@ namespace LeapfrogDissipativeWave::test {
 
 TEST(LeapfrogDissipativeWave, timestepDissipativeWaveEquation) {
   // Generate a triangular test mesh of the unit square
-  const int selector = 3; // Mesh comprising only triangles
+  const int selector = 3;  // Mesh comprising only triangles
   const double scale = 1.0 / 3.0;
   std::shared_ptr<lf::mesh::Mesh> mesh_p =
       lf::mesh::test_utils::GenerateHybrid2DTestMesh(selector, scale);
@@ -48,4 +48,4 @@ TEST(LeapfrogDissipativeWave, timestepDissipativeWaveEquation) {
   ASSERT_NEAR((sol - ref_sol).lpNorm<Eigen::Infinity>(), 0, 1e-6);
 }
 
-} // namespace LeapfrogDissipativeWave::test
+}  // namespace LeapfrogDissipativeWave::test

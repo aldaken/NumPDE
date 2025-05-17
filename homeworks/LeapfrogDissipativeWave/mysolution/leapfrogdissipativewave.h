@@ -66,6 +66,6 @@ void convergenceDissipativeLeapfrog(unsigned int reflevels, double T = 1.0,
                                     unsigned int Mfac = 2);
 
 void testDissipativeLeapfrog(void);
-} // namespace LeapfrogDissipativeWave
+}  // namespace LeapfrogDissipativeWave
 
 #endif

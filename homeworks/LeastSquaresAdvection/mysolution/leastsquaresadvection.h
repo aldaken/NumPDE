@@ -30,6 +30,7 @@
 
 #include <Eigen/Core>
 #include <Eigen/Sparse>
+#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -94,7 +95,7 @@ LSQAdvectionMatrixProvider<REACTION_COEFF>::LSQAdvectionMatrixProvider(
 
 /* SAM_LISTING_BEGIN_1 */
 template <lf::mesh::utils::MeshFunction REACTION_COEFF>
-LSQAdvectionMatrixProvider<REACTION_COEFF>::ElemMat
+typename LSQAdvectionMatrixProvider<REACTION_COEFF>::ElemMat
 LSQAdvectionMatrixProvider<REACTION_COEFF>::Eval(const lf::mesh::Entity &cell) {
   // Topological type of the cell
   const lf::base::RefEl ref_el{cell.RefEl()};
@@ -183,7 +184,7 @@ Eigen::VectorXd solveAdvectionDirichletBVP(
      Your code here
      ************************************************** */
   // III. Solving linear system of equations using
-  // \eigen's sparse direct elimination solver 
+  // \eigen's sparse direct elimination solver
   Eigen::SparseMatrix<double> A_crs{A_coo.makeSparse()};
   Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
   solver.compute(A_crs);

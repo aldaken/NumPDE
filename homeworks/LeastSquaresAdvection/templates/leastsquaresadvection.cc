@@ -22,7 +22,7 @@ lf::mesh::utils::AllCodimMeshDataSet<bool> flagEntitiesOnInflow(
   LF_ASSERT_MSG(mesh_p->DimMesh() == 2, "Only implemented for 2D meshes!");
   const lf::mesh::utils::CodimMeshDataSet<bool> bd_ed_flags{
       lf::mesh::utils::flagEntitiesOnBoundary(mesh_p, 1)};
-  lf::mesh::utils::AllCodimMeshDataSet<bool> inflow_flags {mesh_p, false};
+  lf::mesh::utils::AllCodimMeshDataSet<bool> inflow_flags{mesh_p, false};
   // Loop over all cells
   for (const lf::mesh::Entity *cell : mesh_p->Entities(0)) {
     const lf::base::size_type num_vert = cell->RefEl().NumNodes();
@@ -40,22 +40,22 @@ lf::mesh::utils::AllCodimMeshDataSet<bool> flagEntitiesOnInflow(
         // Obtain vector in the direction of the edge
         const int p0_idx = edge_idx;
         const int p1_idx = (edge_idx + 1) % num_vert;
-	const int pext_idx = (edge_idx + 2) % num_vert;
+        const int pext_idx = (edge_idx + 2) % num_vert;
         const Eigen::Vector2d ed_dir =
             corners.col(p1_idx) - corners.col(p0_idx);
         // Normal vector
         Eigen::Vector2d ed_n(-ed_dir[1], ed_dir[0]);
         // Ensure that the normal vector points to the exterior of the cell
-	if (ed_n.dot(corners.col(pext_idx) - corners.col(p0_idx)) > 0.0) {
-	  ed_n = -ed_n;
-	}
-	// Compare direction of velocity and that of the exterior normal
-	if (ed_n.dot(velocity) <= 0.0) {
-	  inflow_flags(*edges[edge_idx]) = true;
-	  for (const lf::mesh::Entity *node : edges[edge_idx]->SubEntities(1)) {
-	    inflow_flags(*node) = true;
-	  }
-	}
+        if (ed_n.dot(corners.col(pext_idx) - corners.col(p0_idx)) > 0.0) {
+          ed_n = -ed_n;
+        }
+        // Compare direction of velocity and that of the exterior normal
+        if (ed_n.dot(velocity) <= 0.0) {
+          inflow_flags(*edges[edge_idx]) = true;
+          for (const lf::mesh::Entity *node : edges[edge_idx]->SubEntities(1)) {
+            inflow_flags(*node) = true;
+          }
+        }
       }
     }
   }

@@ -26,8 +26,8 @@ namespace NeumannDataRecovery {
  *
  * For explanations see Code 2.4.5.11 in the NumPDE lecture document.
  */
-Eigen::Matrix<double, 2, 3>
-GradsBaryCoords(Eigen::Matrix<double, 2, 3> vertices);
+Eigen::Matrix<double, 2, 3> GradsBaryCoords(
+    Eigen::Matrix<double, 2, 3> vertices);
 
 /** @brief Computation of exterior unit normals for flat triangle/quadrilateral
  *
@@ -44,8 +44,8 @@ GradsBaryCoords(Eigen::Matrix<double, 2, 3> vertices);
  * quadrilateral is decomposed into two triangles, whose exterior unit normals
  * are computed subsequently.
  */
-Eigen::Matrix<double, 2, 4>
-exteriorUnitNormals(const lf::geometry::Geometry &geo);
+Eigen::Matrix<double, 2, 4> exteriorUnitNormals(
+    const lf::geometry::Geometry &geo);
 
 /** @brief Compute the piecewise constant Neumann data directly from a piecewise
  * linear finite-element solution
@@ -61,6 +61,6 @@ lf::mesh::utils::CodimMeshDataSet<double> getNeumannData(
     std::shared_ptr<const lf::uscalfe::FeSpaceLagrangeO1<double>> fe_space,
     const Eigen::VectorXd &mu);
 
-} // namespace NeumannDataRecovery
+}  // namespace NeumannDataRecovery
 
 #endif

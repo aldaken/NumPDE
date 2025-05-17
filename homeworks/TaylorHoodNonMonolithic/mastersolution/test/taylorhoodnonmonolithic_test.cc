@@ -219,8 +219,9 @@ TEST(TaylorHoodNonMonolithic, Uzawa) {
                          const Eigen::VectorXd &pi) -> void {
     rec_data.emplace_back(mu_x, mu_y, pi);
   };
-  auto [res_mu_x, res_mu_y, res_pi] = TaylorHoodNonMonolithic::CGUzawa(
-      A, B_x, B_y, phi_x, phi_y, 1E-6, 1E-8, 10, rec);
+  [[maybe_unused]] auto [res_mu_x, res_mu_y, res_pi] =
+      TaylorHoodNonMonolithic::CGUzawa(A, B_x, B_y, phi_x, phi_y, 1E-6, 1E-8,
+                                       10, rec);
   std::cout << "CG Uzawa took " << rec_data.size() << "steps\n";
   int step = 1;
   for (auto vecs : rec_data) {
