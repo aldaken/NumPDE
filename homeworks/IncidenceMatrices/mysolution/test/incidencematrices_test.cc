@@ -11,7 +11,7 @@ namespace IncidenceMatrices::test {
 
 // Create demo mesh from exercise sheet and test if edge vertex incidence
 // matrix is the same as the one calculated by hand
-TEST(Homework_2_6, EdgeVertexIncidenceMatrix) {
+TEST(IncMat, EdgeVertexIncidenceMatrix) {
   std::shared_ptr<lf::mesh::Mesh> demoMesh =
       IncidenceMatrices::createDemoMesh();
   Eigen::SparseMatrix<int> G_sp =
@@ -35,7 +35,7 @@ TEST(Homework_2_6, EdgeVertexIncidenceMatrix) {
 
 // Create demo mesh from exercise sheet and test if cell edge incidence
 // matrix is the same as the one calculated by hand
-TEST(Homework_2_6, CellEdgeIncidenceMatrix) {
+TEST(IncMat, CellEdgeIncidenceMatrix) {
   std::shared_ptr<lf::mesh::Mesh> demoMesh =
       IncidenceMatrices::createDemoMesh();
   Eigen::SparseMatrix<int> D_sp =
@@ -55,10 +55,27 @@ TEST(Homework_2_6, CellEdgeIncidenceMatrix) {
 
 // Test co-chain complex property (D*G = 0) at the example of the mesh
 // in the exercise sheet
-TEST(Homework_2_6, CoChainComplexProperty) {
+TEST(IncMat, CoChainComplexProperty) {
   std::shared_ptr<lf::mesh::Mesh> demoMesh =
       IncidenceMatrices::createDemoMesh();
   EXPECT_TRUE(IncidenceMatrices::testZeroIncidenceMatrixProduct(*demoMesh));
+}
+
+// Test Hodge Laplacian matrix
+TEST(IncMat, HodgeLaplacian) {
+  std::shared_ptr<lf::mesh::Mesh> demoMesh =
+      IncidenceMatrices::createDemoMesh();
+  Eigen::SparseMatrix<int> D =
+      IncidenceMatrices::computeCellEdgeIncidenceMatrix(*demoMesh);
+  Eigen::SparseMatrix<int> G =
+      IncidenceMatrices::computeEdgeVertexIncidenceMatrix(*demoMesh);
+  Eigen::SparseMatrix<int> L =
+      IncidenceMatrices::computeHodgeLaplaceMatrix(*demoMesh);
+  // Direct multiplication of sparse matrices
+  Eigen::SparseMatrix<int> L_ref = D.transpose() * D + G * G.transpose();
+  // Output matrices
+  std::cout << "L = \n" << Eigen::MatrixXi(L) << std::endl;
+  std::cout << "L_ref = \n" << Eigen::MatrixXi(L_ref) << std::endl;
 }
 
 }  // namespace IncidenceMatrices::test

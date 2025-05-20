@@ -109,6 +109,7 @@
     "StokesMINIElement/",
     "LeastSquaresAdvection/",
     "FVMIsentropicEuler/",
-    "TaylorHoodNonMonolithic/"
+    "TaylorHoodNonMonolithic/",
+    "HodgeLaplacian2D/"
   ]
 }

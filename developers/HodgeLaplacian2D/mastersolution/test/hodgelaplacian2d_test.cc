@@ -1,16 +1,16 @@
 /**
- * @file XXX_test.cc
- * @brief NPDE homework XXX code
- * @author
- * @date
+ * @file HodgeLaplacian2D_test.cc
+ * @brief NPDE homework HodgeLaplacian2D code
+ * @author Ralf Hiptmair
+ * @date May 2025
  * @copyright Developed at SAM, ETH Zurich
  */
+
+#include "../hodgelaplacian2d.h"
 
 #include <gtest/gtest.h>
 
 #include <Eigen/Core>
-
-#include "../xxx.h"
 
 /* Test in the google testing framework
 
@@ -35,8 +35,7 @@
  if the assertion is violated.
  */
 
+namespace HodgeLaplacian2D::test {
+TEST(HodgeLaplacian, Dummy) { EXPECT_TRUE(1 == 1); }
 
-namespace XXX::test {
-
-  
-}  // namespace XXX::test
+}  // namespace HodgeLaplacian2D::test

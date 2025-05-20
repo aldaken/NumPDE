@@ -1,8 +1,8 @@
 /**
  * @file TaylorHoodNonMonolithic_test.cc
  * @brief NPDE homework TaylorHoodNonMonolithic code
- * @author
- * @date
+ * @author Ralf Hiptmair
+ * @date July 2024
  * @copyright Developed at SAM, ETH Zurich
  */
 

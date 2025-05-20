@@ -1,7 +1,7 @@
 #include <lf/mesh/mesh.h>
 
 #include <Eigen/Core>
-#include <Eigen/SparseCore>
+#include <Eigen/Sparse>
 #include <iostream>
 #include <memory>
 
@@ -34,5 +34,11 @@ int main() {
                     ? "Yes!"
                     : "No!")
             << "\n";
+  // Step 4: Compute Hodge Laplace matrix
+  std::cout << "Computing matrix L:\n";
+  Eigen::SparseMatrix<int> L =
+      IncidenceMatrices::computeHodgeLaplaceMatrix(*demoMesh);
+  std::cout << "Done!";
+  std::cout << "L = \n" << Eigen::MatrixXi(L) << std::endl;
   return 0;
 }
