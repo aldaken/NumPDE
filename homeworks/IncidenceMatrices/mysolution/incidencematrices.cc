@@ -1,14 +1,21 @@
 #include "incidencematrices.h"
 
+#include <Eigen/src/SparseCore/SparseUtil.h>
 #include <lf/base/base.h>
+#include <lf/base/lf_assert.h>
 #include <lf/geometry/geometry.h>
+#include <lf/mesh/entity.h>
 #include <lf/mesh/hybrid2d/hybrid2d.h>
 #include <lf/mesh/mesh.h>
+#include <lf/mesh/utils/codim_mesh_data_set.h>
 
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 #include <array>
+#include <cstddef>
 #include <memory>
+#include <span>
+#include <vector>
 
 namespace IncidenceMatrices {
 
@@ -105,5 +112,22 @@ bool testZeroIncidenceMatrixProduct(const lf::mesh::Mesh &mesh) {
   return isZero;
 }
 /* SAM_LISTING_END_3 */
+
+/* SAM_LISTING_BEGIN_4 */
+Eigen::SparseMatrix<int> computeHodgeLaplaceMatrix(const lf::mesh::Mesh &mesh) {
+  // Size of Hodge Laplacian matrix for discrete 1-forms is equal to the number of edges
+  // of the mesh
+  const size_t N = mesh.NumEntities(1);
+  // Store cell-edge incidence matrix here
+  Eigen::SparseMatrix<int, Eigen::RowMajor> L(N,N);
+  // Triplet vector to be used for the initialization of the sparse matrix
+  std::vector<Eigen::Triplet<int>> triplets;
+//====================
+// Your code goes here
+//====================
+  L.setFromTriplets(triplets.begin(), triplets.end());
+  return L;
+}
+/* SAM_LISTING_END_4 */
 
 }  // namespace IncidenceMatrices

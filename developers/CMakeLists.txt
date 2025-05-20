@@ -111,5 +111,5 @@ add_subdirectory(StokesMINIElement)
 add_subdirectory(LeastSquaresAdvection)
 add_subdirectory(FVMIsentropicEuler)
 add_subdirectory(TaylorHoodNonMonolithic)
-  
+add_subdirectory(HodgeLaplacian2D)  
 

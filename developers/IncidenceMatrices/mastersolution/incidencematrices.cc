@@ -1,14 +1,21 @@
 #include "incidencematrices.h"
 
+#include <Eigen/src/SparseCore/SparseUtil.h>
 #include <lf/base/base.h>
+#include <lf/base/lf_assert.h>
 #include <lf/geometry/geometry.h>
+#include <lf/mesh/entity.h>
 #include <lf/mesh/hybrid2d/hybrid2d.h>
 #include <lf/mesh/mesh.h>
+#include <lf/mesh/utils/codim_mesh_data_set.h>
 
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 #include <array>
+#include <cstddef>
 #include <memory>
+#include <span>
+#include <vector>
 
 namespace IncidenceMatrices {
 
@@ -181,5 +188,78 @@ bool testZeroIncidenceMatrixProduct(const lf::mesh::Mesh &mesh) {
   return isZero;
 }
 /* SAM_LISTING_END_3 */
+
+/* SAM_LISTING_BEGIN_4 */
+Eigen::SparseMatrix<int> computeHodgeLaplaceMatrix(const lf::mesh::Mesh &mesh) {
+  // Size of Hodge Laplacian matrix for discrete 1-forms is equal to the number
+  // of edges of the mesh
+  const size_t N = mesh.NumEntities(1);
+  // Store cell-edge incidence matrix here
+  Eigen::SparseMatrix<int, Eigen::RowMajor> L(N, N);
+  // Triplet vector to be used for the initialization of the sparse matrix
+  std::vector<Eigen::Triplet<int>> triplets;
+#if SOLUTION
+  // Pass I: Cell-oriented assembly of $\VD_1^{\top}\VD_1$.
+  // Visit all cells and compute contributions of pairs of faces
+  for (const lf::mesh::Entity *cell : mesh.Entities(0)) {
+    // Array of pointers to the edges of the cell, see \lref{ex:subent}
+    std::span<const lf::mesh::Entity *const> edges{cell->SubEntities(1)};
+    const unsigned int n_ed = edges.size();
+    LF_ASSERT_MSG(n_ed <= 4, "Illegal number of edges");
+    // Inquire about relative orientations, see \lref{rem:ori}
+    std::span<const lf::mesh::Orientation> ror{cell->RelativeOrientations()};
+    LF_ASSERT_MSG(ror.size() == n_ed, "Size mismatch for orientation array");
+    // Obtain global indices of edges
+    std::array<double, 4> edge_idx;
+    for (unsigned int j = 0; j < n_ed; ++j) {
+      edge_idx[j] = mesh.Index(*edges[j]);
+    }
+    // Initialize triplets corresponding to pairs of edges
+    for (unsigned int j = 0; j < n_ed; ++j) {
+      for (unsigned int i = 0; i < n_ed; ++i) {
+        triplets.emplace_back(edge_idx[j], edge_idx[i],
+                              lf::mesh::to_sign(ror[j]) * to_sign(ror[i]));
+      }
+    }
+  }
+  // Pass II: Node-oriented assembly of $\VD_0 \VD_0^{\top}$
+  // Preparatory step: build lists of edges adjacent to nodes
+  std::vector<std::vector<std::pair<size_t, int>>> eds_node(
+      mesh.NumEntities(2));
+  // Run through the edges and collect their endpoints
+  for (const lf::mesh::Entity *edge : mesh.Entities(1)) {
+    // Get index of this edge
+    lf::mesh::Mesh::size_type edgeIdx = mesh.Index(*edge);
+    // Get the nodes and their indices.
+    // Note, that seen from the edges the nodes have codim 1, not 2,
+    // hence we call SubEntities(1). This is a relative codimension!
+    auto nodes = edge->SubEntities(1);
+    lf::mesh::Mesh::size_type firstNodeIdx = mesh.Index(*nodes[0]);
+    lf::mesh::Mesh::size_type lastNodeIdx = mesh.Index(*nodes[1]);
+    LF_ASSERT_MSG(firstNodeIdx < mesh.NumEntities(2),
+                  "First node index out of range");
+    LF_ASSERT_MSG(lastNodeIdx < mesh.NumEntities(2),
+                  "Last node index out of range");
+    eds_node[firstNodeIdx].emplace_back(edgeIdx, -1);
+    eds_node[lastNodeIdx].emplace_back(edgeIdx, 1);
+  }
+  // Run through nodes and pairs ofv adjacent edges
+  for (const std::vector<std::pair<size_t, int>> &edgesinfo : eds_node) {
+    for (const std::pair<size_t, int> &idxori1 : edgesinfo) {
+      for (const std::pair<size_t, int> &idxori2 : edgesinfo) {
+        triplets.emplace_back(idxori1.first, idxori2.first,
+                              idxori1.second * idxori2.second);
+      }
+    }
+  }
+#else
+//====================
+// Your code goes here
+//====================
+#endif
+  L.setFromTriplets(triplets.begin(), triplets.end());
+  return L;
+}
+/* SAM_LISTING_END_4 */
 
 }  // namespace IncidenceMatrices

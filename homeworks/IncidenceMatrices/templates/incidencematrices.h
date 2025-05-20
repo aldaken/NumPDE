@@ -35,4 +35,11 @@ Eigen::SparseMatrix<int> computeCellEdgeIncidenceMatrix(
  */
 bool testZeroIncidenceMatrixProduct(const lf::mesh::Mesh &mesh);
 
+/** @brief Compute the Hodge-Laplacian matrix L for the given mesh
+ * @param mesh The input mesh of type lf::mesh::Mesh (or of derived type,
+ *        such as lf::mesh::hybrid2d::Mesh)
+ * @return The Hodge-Laplacian matrix in sparse matrix format
+ */
+Eigen::SparseMatrix<int> computeHodgeLaplaceMatrix(const lf::mesh::Mesh &mesh);
+
 }  // namespace IncidenceMatrices

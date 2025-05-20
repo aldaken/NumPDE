@@ -182,8 +182,6 @@ void convergenceDissipativeLeapfrog(unsigned int reflevels, double T,
     // Set up global FE space; second-order Lagrangian finite elements
     std::shared_ptr<const lf::uscalfe::FeSpaceLagrangeO2<double>> fe_space_p =
         fe_space_ptrs[level];
-    // Number of degrees of freedom
-    const lf::base::size_type N_dofs((fe_space_p->LocGlobMap()).NumDofs());
     // Interpolate initial data into FE space
     const Eigen::VectorXd u0_vec = lf::fe::NodalProjection(*fe_space_p, mf_u0);
     const Eigen::VectorXd v0_vec = lf::fe::NodalProjection(*fe_space_p, mf_v0);

@@ -118,8 +118,8 @@ TEST(FVMShallowWater, solveSWE) {
   auto u0 = [](double x) -> Eigen::Vector2d {
     if (x > 0 && x < 1)
       return (Eigen::Vector2d() << 1. - x * (1. - x), 1.).finished();
-    else
-      return (Eigen::Vector2d() << 1., 0.).finished();
+
+    return (Eigen::Vector2d() << 1., 0.).finished();
   };
   // Recording intermediate approximations
   auto res =

@@ -14,15 +14,14 @@
 #include <lf/fe/fe_tools.h>
 #include <lf/mesh/test_utils/test_meshes.h>
 #include <lf/mesh/utils/mesh_function_global.h>
+#include <lf/uscalfe/uscalfe.h>
 
 #include <Eigen/Core>
+#include <cmath>
 #include <cstddef>
-
-#include <lf/uscalfe/uscalfe.h>
+#include <iostream>
 #include <memory>
 #include <vector>
-#include <iostream>
-#include <cmath>
 
 /* Test in the google testing framework
 
@@ -49,7 +48,7 @@
 
 namespace IRKDegenerateEvl::test {
 
-  
+
 TEST(IRKDegenerateEvl, SUBPROBLEM_E) {
   // Simple mesh of the unit square
   // Short name for 2d coordinate vectors
@@ -118,11 +117,8 @@ TEST(IRKDegenerateEvl, SUBPROBLEM_E) {
 TEST(IRKDegenerateEvl, SUBPROBLEM_F) {
   // Define the Butcher Tableau matrix (Ark)
   Eigen::MatrixXd Ark(5, 5);
-  Ark << 0.,    0.,    0.,    0.,    0.,
-         1./3., 1./3., 0.,    0.,    0.,
-         2./3., -1./3., 1.,   0.,    0.,
-         1.,    1.,   -1.,    1.,    0.,
-         0.,    1./8., 3./8., 3./8., 1./8.;
+  Ark << 0., 0., 0., 0., 0., 1. / 3., 1. / 3., 0., 0., 0., 2. / 3., -1. / 3.,
+      1., 0., 0., 1., 1., -1., 1., 0., 0., 1. / 8., 3. / 8., 3. / 8., 1. / 8.;
 
   // Define the initial vector (mu0)
   Eigen::VectorXd mu0(5);
@@ -146,7 +142,6 @@ TEST(IRKDegenerateEvl, SUBPROBLEM_F) {
     EXPECT_NEAR(out(i), exp(-i - 1), 1e-2);
   }
 }
-
 
 TEST(IRKDegenerateEvl, SUBPROBLEM_H) {
   // Create a mock finite element space
@@ -187,15 +182,16 @@ TEST(IRKDegenerateEvl, SUBPROBLEM_H) {
   auto u0 = [](const Eigen::Vector2d &x) -> double { return x[0] + x[1]; };
 
   // Define time-stepping parameters
-  unsigned int no_ts = 30; // Number of time steps
+  unsigned int no_ts = 30;  // Number of time steps
   double T = 10.0;          // Final time
 
   // Run the function
   auto norms = IRKDegenerateEvl::tabulateSolNorms(fes, u0, no_ts, T);
 
   // Verify the computed norms (basic checks)
-  ASSERT_EQ(norms.size(), no_ts + 1); // There should be one norm pair per time step
-  
+  ASSERT_EQ(norms.size(),
+            no_ts + 1);  // There should be one norm pair per time step
+
   // Optionally print results for debugging purposes
   std::cout << "Time step norms (L2 and H1):\n";
   for (size_t i = 0; i < norms.size(); ++i) {
@@ -204,11 +200,8 @@ TEST(IRKDegenerateEvl, SUBPROBLEM_H) {
   }
 
   // Specific norm checks (this requires understanding of the problem dynamics)
-  EXPECT_NEAR(2.,norms.back().first,1e-5);
-  EXPECT_NEAR(0.,norms.back().second,1e-5);
-  
+  EXPECT_NEAR(2., norms.back().first, 1e-5);
+  EXPECT_NEAR(0., norms.back().second, 1e-5);
 }
 
-  
-  
 }  // namespace IRKDegenerateEvl::test
