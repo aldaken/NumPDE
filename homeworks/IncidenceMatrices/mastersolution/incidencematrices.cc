@@ -173,11 +173,11 @@ bool testZeroIncidenceMatrixProduct(const lf::mesh::Mesh &mesh) {
 
 /* SAM_LISTING_BEGIN_4 */
 Eigen::SparseMatrix<int> computeHodgeLaplaceMatrix(const lf::mesh::Mesh &mesh) {
-  // Size of Hodge Laplacian matrix for discrete 1-forms is equal to the number of edges
-  // of the mesh
+  // Size of Hodge Laplacian matrix for discrete 1-forms is equal to the number
+  // of edges of the mesh
   const size_t N = mesh.NumEntities(1);
   // Store cell-edge incidence matrix here
-  Eigen::SparseMatrix<int, Eigen::RowMajor> L(N,N);
+  Eigen::SparseMatrix<int, Eigen::RowMajor> L(N, N);
   // Triplet vector to be used for the initialization of the sparse matrix
   std::vector<Eigen::Triplet<int>> triplets;
   // Pass I: Cell-oriented assembly of $\VD_1^{\top}\VD_1$.
