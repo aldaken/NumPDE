@@ -112,12 +112,12 @@ TEST(HodgeLaplacian, CmpEval) {
   // Loop over cells
   for (const lf::mesh::Entity* cell : mesh_p->Entities(0)) {
     EXPECT_EQ(cell->RefEl(), lf::base::RefEl::kTria());
-    const Eigen::MatrixXd Mk_ref = hlemp.Eval_alt(*cell);
+    const Eigen::MatrixXd Mk_ref = hlemp.Eval_ref(*cell);
     const Eigen::MatrixXd Mk = hlemp.Eval(*cell);
     const double diff = (Mk - Mk_ref).norm();
-    std::cout << "M_ref = \n" << Mk_ref << std::endl;
-    std::cout << "MK = \n" << Mk << std::endl;
-    std::cout << "M_ref - MK = \n" << (Mk_ref - Mk) << std::endl;
+    // std::cout << "M_ref = \n" << Mk_ref << std::endl;
+    // std::cout << "MK = \n" << Mk << std::endl;
+    // std::cout << "M_ref - MK = \n" << (Mk_ref - Mk) << std::endl;
     EXPECT_NEAR(diff, 0.0, 1E-6);
   }
 }
