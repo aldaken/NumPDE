@@ -74,8 +74,10 @@ TEST(IncMat, HodgeLaplacian) {
   // Direct multiplication of sparse matrices
   Eigen::SparseMatrix<int> L_ref = D.transpose() * D + G * G.transpose();
   // Output matrices
-  std::cout << "L = \n" << Eigen::MatrixXi(L) << std::endl;
-  std::cout << "L_ref = \n" << Eigen::MatrixXi(L_ref) << std::endl;
+  // std::cout << "L = \n" << Eigen::MatrixXi(L) << std::endl;
+  // std::cout << "L_ref = \n" << Eigen::MatrixXi(L_ref) << std::endl;
+  const int diff_norm = (L_ref - L).squaredNorm();
+  EXPECT_EQ(diff_norm, 0);
 }
 
 }  // namespace IncidenceMatrices::test

@@ -59,7 +59,7 @@ class TaylorHoodElementMatrixProvider {
 /**
  * @brief Assembly of full Galerkin matrix in triplet format
  *
- * @param dofh DofHandler object for all FE spaces
+ * @param dofh DofHandler object for all FE spacesw
  */
 lf::assemble::COOMatrix<double> buildTaylorHoodGalerkinMatrix(
     const lf::assemble::DofHandler &dofh);
