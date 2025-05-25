@@ -8,10 +8,13 @@
 
 #include "hodgelaplacian2d.h"
 
+#include <lf/assemble/assembly_types.h>
+#include <lf/base/lf_assert.h>
+
 namespace HodgeLaplacian2D {
 /* SAM_LISTING_BEGIN_1 */
 HodgeLaplacian2DElementMatrixProvider::ElemMat
-HodgeLaplacian2DElementMatrixProvider::Eval(const lf::mesh::Entity& cell) {
+HodgeLaplacian2DElementMatrixProvider::Eval_ref(const lf::mesh::Entity& cell) {
   LF_VERIFY_MSG(cell.RefEl() == lf::base::RefEl::kTria(),
                 "Unsupported cell type " << cell.RefEl());
   // Area of the triangle
@@ -91,7 +94,7 @@ HodgeLaplacian2DElementMatrixProvider::Eval(const lf::mesh::Entity& cell) {
 
 /* SAM_LISTING_BEGIN_2 */
 HodgeLaplacian2DElementMatrixProvider::ElemMat
-HodgeLaplacian2DElementMatrixProvider::Eval_alt(const lf::mesh::Entity& cell) {
+HodgeLaplacian2DElementMatrixProvider::Eval(const lf::mesh::Entity& cell) {
   LF_VERIFY_MSG(cell.RefEl() == lf::base::RefEl::kTria(),
                 "Unsupported cell type " << cell.RefEl());
   // Area of the triangle
@@ -142,16 +145,6 @@ HodgeLaplacian2DElementMatrixProvider::Eval_alt(const lf::mesh::Entity& cell) {
 }
 /* SAM_LISTING_END_2 */
 
-Eigen::VectorXd computeHodgeLaplaceRhsVector(
-    const lf::assemble::DofHandler& dofh) {
-  // Total number of FE d.o.f.s
-  lf::assemble::size_type N = dofh.NumDofs();
-  // Right-hand side vector
-  Eigen::VectorXd rhs(N);
-
-  return rhs;
-}
-
 lf::assemble::COOMatrix<double> buildHodgeLaplacianGalerkinMatrix(
     const lf::assemble::DofHandler& dofh) {
   // Total number of FE d.o.f.s
@@ -170,6 +163,59 @@ lf::assemble::COOMatrix<double> buildHodgeLaplacianGalerkinMatrix(
      ********************************************************************** */
 #endif
   return A;
+}
+
+std::vector<Eigen::Vector2d> MeshFunctionWF1::operator()(
+    const lf::mesh::Entity& cell, const Eigen::MatrixXd& local) const {
+  LF_VERIFY_MSG(cell.RefEl() == lf::base::RefEl::kTria(),
+                "Unsupported entity type " << cell.RefEl());
+  // Compute gradients of barycentric coordinate functions, see
+  // \lref{cpp:gradbarycoords}. Get vertices of the triangle
+  auto endpoints = lf::geometry::Corners(*(cell.Geometry()));
+  Eigen::Matrix<double, 3, 3> X;  // temporary matrix
+  X.block<3, 1>(0, 0) = Eigen::Vector3d::Ones();
+  X.block<3, 2>(0, 1) = endpoints.transpose();
+  // This matrix contains $\cob{\grad \lambda_i}$ in its columns.
+  // Note that $\grad\lambda_i$ is accessed as G.col(i-1).
+  const auto G{X.inverse().block<2, 3>(1, 0)};
+  // Lambda functions in terms of reference coordinates for local Whitney
+  // 1-forms, see \prbcref{eq:lsf1}.
+  const std::array<std::function<Eigen::Vector2d(Eigen::Vector2d)>, 3> beta{
+      [&G](Eigen::Vector2d c) -> Eigen::Vector2d {
+        return (1.0 - c[0] - c[1]) * G.col(1) - c[0] * G.col(0);
+      },
+      [&G](Eigen::Vector2d c) -> Eigen::Vector2d {
+        return c[0] * G.col(2) - c[1] * G.col(1);
+      },
+      [&G](Eigen::Vector2d c) -> Eigen::Vector2d {
+        return c[1] * G.col(0) - (1.0 - c[0] - c[1]) * G.col(2);
+      }};
+  //  Obtain local d.o.f.s
+  std::span<const lf::assemble::gdof_idx_t> locdofs{
+      dofh_.GlobalDofIndices(cell)};
+  LF_ASSERT_MSG(locdofs.size() == 6, "Six dofs must belong to every cell");
+  // The local d.o.f.s with number 3,4,5 are the coefficients for the local
+  Eigen::Vector3d wf1ldofs(coeffs_[locdofs[3]], coeffs_[locdofs[4]],
+                           coeffs_[locdofs[5]]);
+  // Whitney 1-forms.
+  // Correct for orientation mismatch
+  auto relor = cell.RelativeOrientations();
+  LF_ASSERT_MSG(relor.size() == 3, "Triangle should have 3 edges!?");
+  for (int k = 0; k < 3; ++k) {
+    if (relor[k] == lf::mesh::Orientation::negative) {
+      // Flip sign of coefficient
+      wf1ldofs[k] *= -1;
+    }
+  }
+  std::vector<Eigen::Vector2d> res;
+  // Run through evaluation points (columns of argument matrix)
+  const size_t no_pts = local.cols();
+  for (int j = 0; j < no_pts; ++j) {
+    res.emplace_back(wf1ldofs[0] * beta[0](local.col(j)) +
+                     wf1ldofs[1] * beta[1](local.col(j)) +
+                     wf1ldofs[2] * beta[2](local.col(j)));
+  }
+  return res;
 }
 
 }  // namespace HodgeLaplacian2D
