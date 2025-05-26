@@ -10,6 +10,8 @@
 
 #include <lf/assemble/assembly_types.h>
 #include <lf/base/lf_assert.h>
+#include <lf/mesh/test_utils/test_meshes.h>
+#include <lf/mesh/utils/mesh_function_global.h>
 
 namespace HodgeLaplacian2D {
 /* SAM_LISTING_BEGIN_1 */
@@ -17,6 +19,8 @@ HodgeLaplacian2DElementMatrixProvider::ElemMat
 HodgeLaplacian2DElementMatrixProvider::Eval_ref(const lf::mesh::Entity& cell) {
   LF_VERIFY_MSG(cell.RefEl() == lf::base::RefEl::kTria(),
                 "Unsupported cell type " << cell.RefEl());
+  LF_VERIFY_MSG(cell.Geometry()->isAffine(),
+                "Triangle must have straight edges");
   // Area of the triangle
   double area = lf::geometry::Volume(*cell.Geometry());
   // Compute gradients of barycentric coordinate functions, see
@@ -46,7 +50,8 @@ HodgeLaplacian2DElementMatrixProvider::Eval_ref(const lf::mesh::Entity& cell) {
         return c[2] * G.col(0) - c[0] * G.col(2);
       }};
   // Barycentric coordinates of the midpoints of the edges for
-  // use with the 3-point edge midpoint quadrature rule \prbeqref{eq:MPR}
+  // use with the third order 3-point edge midpoint quadrature rule
+  // \lref{eq:qr2}
   const std::array<Eigen::Vector3d, 3> mp = {Eigen::Vector3d({0.5, 0.5, 0}),
                                              Eigen::Vector3d({0, 0.5, 0.5}),
                                              Eigen::Vector3d({0.5, 0, 0.5})};
@@ -97,16 +102,19 @@ HodgeLaplacian2DElementMatrixProvider::ElemMat
 HodgeLaplacian2DElementMatrixProvider::Eval(const lf::mesh::Entity& cell) {
   LF_VERIFY_MSG(cell.RefEl() == lf::base::RefEl::kTria(),
                 "Unsupported cell type " << cell.RefEl());
+  LF_VERIFY_MSG(cell.Geometry()->isAffine(),
+                "Triangle must have straight edges");
   // Area of the triangle
   double area = lf::geometry::Volume(*cell.Geometry());
-  // Compute gradients of barycentric coordinate functions, see
-  // \lref{cpp:gradbarycoords}. Get vertices of the triangle
-  auto endpoints = lf::geometry::Corners(*(cell.Geometry()));
-  Eigen::Matrix<double, 3, 3> X;  // temporary matrix
-  X.block<3, 1>(0, 0) = Eigen::Vector3d::Ones();
-  X.block<3, 2>(0, 1) = endpoints.transpose();
-  // This matrix contains $\cob{\grad \lambda_i}$ in its columns
-  const auto G{X.inverse().block<2, 3>(1, 0)};
+  // Compute gradients of barycentric coordinate functions and store them in the
+  // columns of the $2\times 3$-matrix G
+  // clang-format off
+  const Eigen::MatrixXd dpt = (Eigen::MatrixXd(2, 1) << 0.0, 0.0).finished();
+  const Eigen::Matrix<double, 2, 3> G =
+      cell.Geometry()->JacobianInverseGramian(dpt).block(0, 0, 2, 2) *
+    (Eigen::Matrix<double, 2, 3>(2,3) << -1, 1, 0,
+                                         -1, 0, 1).finished();
+  // clang-format on
 #if SOLUTION
   // Compute the element matrix  for $-\Delta$ and $\cob{\Cs^0_1}$.
   // See also \lref{mc:ElementMatrixLaplLFE}.
@@ -124,7 +132,7 @@ HodgeLaplacian2DElementMatrixProvider::Eval(const lf::mesh::Entity& cell) {
   B.col(2) = (L.col(0) - L.col(2)) / 3.0;
   MK_.block(0, 3, 3, 3) = B;
   MK_.block(3, 0, 3, 3) = B.transpose();
-  // Set lower right block $\VA_K$, see \prbcref{ae:Akrefc}
+  // Set lower right block $\VA_K$, see \prbcref{eq:Akrefc}
   MK_.block(3, 3, 3, 3) = Eigen::Matrix3d::Constant(1.0 / area);
   // Correct for orientation mismatch, cf. \prbcref{sp:H}.
   auto relor = cell.RelativeOrientations();
@@ -169,6 +177,9 @@ std::vector<Eigen::Vector2d> MeshFunctionWF1::operator()(
     const lf::mesh::Entity& cell, const Eigen::MatrixXd& local) const {
   LF_VERIFY_MSG(cell.RefEl() == lf::base::RefEl::kTria(),
                 "Unsupported entity type " << cell.RefEl());
+  LF_VERIFY_MSG(cell.Geometry()->isAffine(),
+                "Triangle must have straight edges");
+  /*
   // Compute gradients of barycentric coordinate functions, see
   // \lref{cpp:gradbarycoords}. Get vertices of the triangle
   auto endpoints = lf::geometry::Corners(*(cell.Geometry()));
@@ -177,7 +188,17 @@ std::vector<Eigen::Vector2d> MeshFunctionWF1::operator()(
   X.block<3, 2>(0, 1) = endpoints.transpose();
   // This matrix contains $\cob{\grad \lambda_i}$ in its columns.
   // Note that $\grad\lambda_i$ is accessed as G.col(i-1).
-  const auto G{X.inverse().block<2, 3>(1, 0)};
+  const auto G{X.inverse().block<2, 3>(1, 0)};*/
+  // Compute gradients of barycentric coordinate functions and store them in the
+  // columns of the $2\times 3$-matrix G
+  // clang-format off
+  const Eigen::MatrixXd dpt = (Eigen::MatrixXd(2, 1) << 0.0, 0.0).finished();
+  const Eigen::Matrix<double, 2, 3> G =
+      cell.Geometry()->JacobianInverseGramian(dpt).block(0, 0, 2, 2) *
+    (Eigen::Matrix<double, 2, 3>(2,3) << -1, 1, 0,
+                                         -1, 0, 1).finished();
+  // clang-format on
+
   // Lambda functions in terms of reference coordinates for local Whitney
   // 1-forms, see \prbcref{eq:lsf1}.
   const std::array<std::function<Eigen::Vector2d(Eigen::Vector2d)>, 3> beta{
@@ -216,6 +237,73 @@ std::vector<Eigen::Vector2d> MeshFunctionWF1::operator()(
                      wf1ldofs[2] * beta[2](local.col(j)));
   }
   return res;
+}
+
+/** @brief test of convergence based on manufactured solution
+ *
+ * Computes L2 norm of error of the FEM solution for the 1-form component on a
+ * sequence of meshes generated by regular refinement.
+ */
+void testCvgHLWhitneyFEM(unsigned int refsteps) {
+  using namespace std::numbers;
+  // ********** Part I: Manufactured solution **********
+  // Domain: unit square
+  // A curl-free vectorfield with zero normal components at the boundary of the
+  // unit square: satisfies all natural b.c. for HL BVP
+  auto u = [](Eigen::Vector2d x) -> Eigen::Vector2d {
+    return Eigen::Vector2d(std::sin(pi * x[0]) * std::cos(pi * x[1]),
+                           std::cos(pi * x[0]) * std::sin(pi * x[1]));
+  };
+  // Right-hand side source vectorfield; u is an eigenfunction of the vector
+  // Laplacian.
+  auto f = [&u](Eigen::Vector2d x) -> Eigen::Vector2d {
+    return 2 * pi * pi * u(x);
+  };
+  // Divergence of u
+  auto divu = [](Eigen::Vector2d x) -> double {
+    return 2 * pi * std::cos(pi * x[0]) * std::cos(pi * x[1]);
+  };
+  // Wrap both vectorfields into a MeshFunction
+  lf::mesh::utils::MeshFunctionGlobal mf_u(u);
+  lf::mesh::utils::MeshFunctionGlobal mf_f(f);
+  // ********** Part II: Loop over sequence of meshes **********
+  // Generate a small unstructured triangular mesh
+  const std::shared_ptr<lf::mesh::Mesh> mesh_ptr =
+      lf::mesh::test_utils::GenerateHybrid2DTestMesh(3, 1.0 / 3.0);
+  const std::shared_ptr<lf::refinement::MeshHierarchy> multi_mesh_p =
+      lf::refinement::GenerateMeshHierarchyByUniformRefinemnt(mesh_ptr,
+                                                              refsteps);
+  lf::refinement::MeshHierarchy& multi_mesh{*multi_mesh_p};
+  // Ouput summary information about hierarchy of nested meshes
+  std::cout << "\t Sequence of nested meshes created\n";
+  multi_mesh.PrintInfo(std::cout);
+
+  // Number of levels
+  const int L = multi_mesh.NumLevels();
+  // Table of error norms
+  std::vector<double> L2errs;
+  for (int level = 0; level < L; ++level) {
+    const std::shared_ptr<const lf::mesh::Mesh> lev_mesh_p =
+        multi_mesh.getMesh(level);
+    // ********** Part III: Solving on a single mesh **********
+    // Initialize dof handler for monolithic Whitney FEM
+    lf::assemble::UniformFEDofHandler dofh(lev_mesh_p,
+                                           {{lf::base::RefEl::kPoint(), 1},
+                                            {lf::base::RefEl::kSegment(), 1},
+                                            {lf::base::RefEl::kTria(), 0},
+                                            {lf::base::RefEl::kQuad(), 0}});
+    LF_ASSERT_MSG((dofh.NumDofs() ==
+                   lev_mesh_p->NumEntities(2) + lev_mesh_p->NumEntities(1)),
+                  "No dof mismatch");
+    Eigen::VectorXd dofvec = solveHodgeLaplaceBVP(dofh, mf_f);
+    // Build MeshFunction representing the 1-form component of the solution
+    const HodgeLaplacian2D::MeshFunctionWF1 mf_sol(dofh, dofvec);
+    // Compute L2 norm of the error
+    double L2diff = std::sqrt(lf::fe::IntegrateMeshFunction(
+        *lev_mesh_p, lf::mesh::utils::squaredNorm(mf_sol - mf_u), 2));
+    L2errs.push_back(L2diff);
+    std::cout << "L2 error on level " << level << " = " << L2diff << std::endl;
+  }
 }
 
 }  // namespace HodgeLaplacian2D

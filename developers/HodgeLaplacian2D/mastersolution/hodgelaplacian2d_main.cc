@@ -19,6 +19,10 @@ int main(int /*argc*/, char** /*argv*/) {
   std::cout << "Created by R. Hiptmair, May 2025\n";
   lf::base::LehrFemInfo::PrintInfo(std::cout);
 
+  HodgeLaplacian2D::testCvgHLWhitneyFEM(4);
+
+  return 0;
+
   const char no = '1';
   std::string meshfile = std::string("meshes/unitsquare") + no + ".msh";
   std::cout << "Reading mesh from file " << meshfile << std::endl;
