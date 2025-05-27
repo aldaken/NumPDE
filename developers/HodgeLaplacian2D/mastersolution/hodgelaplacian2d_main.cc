@@ -19,9 +19,9 @@ int main(int /*argc*/, char** /*argv*/) {
   std::cout << "Created by R. Hiptmair, May 2025\n";
   lf::base::LehrFemInfo::PrintInfo(std::cout);
 
-  HodgeLaplacian2D::testCvgHLWhitneyFEM(4);
+  HodgeLaplacian2D::testCvgHLWhitneyFEM(7);
 
-  return 0;
+  /*
 
   const char no = '1';
   std::string meshfile = std::string("meshes/unitsquare") + no + ".msh";
@@ -54,5 +54,6 @@ int main(int /*argc*/, char** /*argv*/) {
   double L2norm = std::sqrt(lf::fe::IntegrateMeshFunction(
       mesh, lf::mesh::utils::squaredNorm(mf_sol), 2));
   std::cout << "L2-norm of 1-form solution = " << L2norm << std::endl;
+  */
   return 0;
 }

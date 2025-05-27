@@ -55,6 +55,7 @@ class HodgeLaplacian2DElementMatrixProvider {
   }
   // Computation of element matrix $\VM_K$: two versions
   [[nodiscard]] ElemMat Eval(const lf::mesh::Entity &cell);
+  // Alternative implementation created for debugging purposes
   [[nodiscard]] ElemMat Eval_ref(const lf::mesh::Entity &cell);
 
  private:
@@ -227,7 +228,16 @@ Eigen::VectorXd solveHodgeLaplaceBVP(const lf::assemble::DofHandler &dofh,
 }
 
 /** @brief Mesh function providing a proxy vector field for Whitney 1-forms in
- * 2D
+ * 2D.
+ *
+ * Note that the monolithic Whitney FEM d.o.f. layout for the HL mixed
+ * variational problem is used. The coefficient vector comprises two parts, the
+ * first "node-associated" gives the basis expansion coefficients of the 0-form
+ * component, the second the Whitney 1-form expansion coefficients of the 1-form
+ * component.
+ *
+ * Only the second part of the coefficient vector is used by objects of this
+ * MeshFunction type.
  *
  */
 class MeshFunctionWF1 {
@@ -245,6 +255,40 @@ class MeshFunctionWF1 {
   // Whitney 1-forms at a number of points inside a cell
   std::vector<Eigen::Vector2d> operator()(const lf::mesh::Entity &cell,
                                           const Eigen::MatrixXd &local) const;
+
+ private:
+  lf::assemble::DofHandler &dofh_;
+  Eigen::VectorXd coeffs_;
+};
+
+/** @brief Mesh function providing a proxy vector field for Whitney 1-forms in
+ * 2D.
+ *
+ * Note that the monolithic Whitney FEM d.o.f. layout for the HL mixed
+ * variational problem is used. The coefficient vector comprises two parts, the
+ * first "node-associated" gives the basis expansion coefficients of the 0-form
+ * component, the second the Whitney 1-form expansion coefficients of the 1-form
+ * component.
+ *
+ * Only the second part of the coefficient vector is used by objects of this
+ * MeshFunction type.
+ *
+ */
+class MeshFunctionWF0 {
+ public:
+  MeshFunctionWF0(lf::assemble::DofHandler &dofh, Eigen::VectorXd coeffs)
+      : dofh_(dofh), coeffs_(std::move(coeffs)) {
+    const lf::mesh::Mesh &mesh = *dofh.Mesh();
+    LF_ASSERT_MSG(dofh_.NumDofs() == coeffs_.size(),
+                  "Size mismatch for coeff vector");
+    LF_ASSERT_MSG(dofh.NumDofs() == (mesh.NumEntities(2) + mesh.NumEntities(1)),
+                  "DofH must manage 1 dof/node and 1 dof/edge");
+  }
+
+  // Evaluation operator: returns the values of the vectorfield in the space of
+  // Whitney 0-forms at a number of points inside a cell
+  std::vector<double> operator()(const lf::mesh::Entity &cell,
+                                 const Eigen::MatrixXd &local) const;
 
  private:
   lf::assemble::DofHandler &dofh_;
