@@ -10,10 +10,15 @@
 
 #include <lf/assemble/assembly_types.h>
 #include <lf/base/lf_assert.h>
+#include <lf/mesh/entity.h>
+#include <lf/mesh/mesh_interface.h>
 #include <lf/mesh/test_utils/test_meshes.h>
+#include <lf/mesh/utils/codim_mesh_data_set.h>
 #include <lf/mesh/utils/mesh_function_global.h>
 
 #include <cstddef>
+#include <memory>
+#include <span>
 
 namespace HodgeLaplacian2D {
 /* SAM_LISTING_BEGIN_1 */
@@ -262,6 +267,57 @@ std::vector<double> MeshFunctionWF0::operator()(
               wf0dofs[2] * xh[1]);
   }
   return res;
+}
+
+std::pair<lf::mesh::utils::CodimMeshDataSet<double>,
+          lf::mesh::utils::CodimMeshDataSet<Eigen::Vector2d>>
+reconstructNodalFields(const lf::assemble::DofHandler& dofh,
+                       const Eigen::VectorXd& coeffs) {
+  // Obtain mesh
+  std::shared_ptr<const lf::mesh::Mesh> mesh_p = dofh.Mesh();
+  const lf::mesh::Mesh& mesh = *mesh_p;
+  LF_ASSERT_MSG(dofh.NumDofs() == (mesh.NumEntities(2) + mesh.NumEntities(1)),
+                "DofH must manage 1 dof/node and 1 dof/edge");
+  // **************************************************
+  // Average values of 1-form component in the nodes of the mesh
+  lf::mesh::utils::CodimMeshDataSet<Eigen::Vector2d> u_vals(
+      mesh_p, 2, Eigen::Vector2d::Constant(0.0));
+  // Auxliary array counting the numbers of triangles adjacent to a node
+  lf::mesh::utils::CodimMeshDataSet<size_t> nb_cnt(mesh_p, 2, 0);
+  // Auxiliary MeshFunction representing 1-form in Whitney finite element space
+  const MeshFunctionWF1 mf_u(dofh, coeffs);
+  // Reference coordinates of vertices of the triangle
+  const Eigen::MatrixXd vert_coord =
+      (Eigen::MatrixXd(2, 3) << 0.0, 1.0, 0.0, 0.0, 0.0, 1.0).finished();
+  // Run through the cells of the mesh
+  for (const lf::mesh::Entity* cell : mesh.Entities(0)) {
+    LF_VERIFY_MSG(cell->RefEl() == lf::base::RefEl::kTria(),
+                  "Unsupported entity type " << cell->RefEl());
+    // Obtain values of discrete 1-form in the vertices of the mesh
+    std::vector<Eigen::Vector2d> wf1_vertex_vals = mf_u(*cell, vert_coord);
+    LF_ASSERT_MSG(wf1_vertex_vals.size() == 3, "Need 3 values for 3 vertices");
+    // Fetch nodes of the cell
+    std::span<const lf::mesh::Entity* const> nodes{cell->SubEntities(2)};
+    LF_ASSERT_MSG(nodes.size() == 3, "Triangle must have 3 nodes");
+    for (int k = 0; k < nodes.size(); ++k) {
+      nb_cnt(*nodes[k])++;
+      u_vals(*nodes[k]) += wf1_vertex_vals[k];
+    }
+  }
+  // **************************************************
+  // Collect nodal values of 0-form components and compute averages for nodal
+  // vectors of 1-form component
+  lf::mesh::utils::CodimMeshDataSet<double> p_vals(mesh_p, 2, 0.0);
+  // Run through the nodes of the mesh
+  for (const lf::mesh::Entity* node : mesh.Entities(2)) {
+    std::span<const lf::assemble::gdof_idx_t> dof_idx{
+        dofh.InteriorGlobalDofIndices(*node)};
+    LF_ASSERT_MSG(dof_idx.size() == 1, "One d.o.f. per node1");
+    p_vals(*node) = coeffs[dof_idx[0]];
+    u_vals(*node) /= nb_cnt(*node);
+  }
+
+  return {p_vals, u_vals};
 }
 
 /** @brief test of convergence based on manufactured solution

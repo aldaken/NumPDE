@@ -21,6 +21,7 @@
 #include <lf/mesh/entity.h>
 #include <lf/mesh/hybrid2d/hybrid2d.h>
 #include <lf/mesh/mesh_interface.h>
+#include <lf/mesh/utils/codim_mesh_data_set.h>
 #include <lf/mesh/utils/utils.h>
 #include <lf/uscalfe/uscalfe.h>
 
@@ -242,7 +243,7 @@ Eigen::VectorXd solveHodgeLaplaceBVP(const lf::assemble::DofHandler &dofh,
  */
 class MeshFunctionWF1 {
  public:
-  MeshFunctionWF1(lf::assemble::DofHandler &dofh, Eigen::VectorXd coeffs)
+  MeshFunctionWF1(const lf::assemble::DofHandler &dofh, Eigen::VectorXd coeffs)
       : dofh_(dofh), coeffs_(std::move(coeffs)) {
     const lf::mesh::Mesh &mesh = *dofh.Mesh();
     LF_ASSERT_MSG(dofh_.NumDofs() == coeffs_.size(),
@@ -257,7 +258,7 @@ class MeshFunctionWF1 {
                                           const Eigen::MatrixXd &local) const;
 
  private:
-  lf::assemble::DofHandler &dofh_;
+  const lf::assemble::DofHandler &dofh_;
   Eigen::VectorXd coeffs_;
 };
 
@@ -329,6 +330,14 @@ Eigen::VectorXd nodalProjectionWF1(const lf::assemble::DofHandler &dofh,
   }
   return np_coeffs;
 }
+
+/** @brief Aggregate vector proxy of 1-form component into mesh nodes
+ *
+ */
+std::pair<lf::mesh::utils::CodimMeshDataSet<double>,
+          lf::mesh::utils::CodimMeshDataSet<Eigen::Vector2d>>
+reconstructNodalFields(const lf::assemble::DofHandler &dofh,
+                       const Eigen::VectorXd &coeffs);
 
 /** @brief test of convergence based on manufactured solution
  *

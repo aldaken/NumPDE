@@ -10,6 +10,7 @@
 
 #include <gtest/gtest.h>
 #include <lf/base/lf_assert.h>
+#include <lf/geometry/geometry_interface.h>
 #include <lf/mesh/entity.h>
 #include <lf/mesh/test_utils/test_meshes.h>
 #include <lf/mesh/utils/mesh_function_global.h>
@@ -147,6 +148,35 @@ TEST(HodgeLaplacian, PrjWF1MF) {
       *mesh_p, lf::mesh::utils::squaredNorm(mf_vfc - mf_wf1), 2));
   // std::cout << "norm of difference = " << L2diff << std::endl;
   EXPECT_NEAR(L2diff, 0.0, 1.0E-6);
+}
+
+TEST(HodgeLaplacian, reconstructNodalFields) {
+  // Obtain simple test mesh of unit square
+  std::shared_ptr<const lf::mesh::Mesh> mesh_p =
+      lf::mesh::test_utils::GenerateHybrid2DTestMesh(3, 1.0 / 3.0);
+  // Set up DofHandler for monolithic Whitney finite element space
+  // for mixed variational formulation of Hodge-Laplacian BVP
+  lf::assemble::UniformFEDofHandler dof_handler(
+      mesh_p, {{lf::base::RefEl::kPoint(), 1},
+               {lf::base::RefEl::kSegment(), 1},
+               {lf::base::RefEl::kTria(), 0},
+               {lf::base::RefEl::kQuad(), 0}});
+  // A constant vector field
+  auto vfc = [](Eigen::Vector2d /*x*/) -> Eigen::Vector2d {
+    return {1.0, 2.0};
+  };
+  lf::mesh::utils::MeshFunctionGlobal mf_vfc(vfc);
+  const Eigen::VectorXd c =
+      HodgeLaplacian2D::nodalProjectionWF1(dof_handler, mf_vfc);
+  // std::cout << "c = \n" << c.transpose() << std::endl;
+  auto [p_dat, u_dat] =
+      HodgeLaplacian2D::reconstructNodalFields(dof_handler, c);
+  for (const lf::mesh::Entity* node : mesh_p->Entities(2)) {
+    const Eigen::MatrixXd pos = lf::geometry::Corners(*node->Geometry());
+    const Eigen::Vector2d u_val = u_dat(*node);
+    const Eigen::Vector2d ref_val = vfc(pos.col(0));
+    EXPECT_NEAR((u_val - ref_val).norm(), 0.0, 1.0E-6);
+  }
 }
 
 }  // namespace HodgeLaplacian2D::test
