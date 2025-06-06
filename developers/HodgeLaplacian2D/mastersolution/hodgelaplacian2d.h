@@ -99,7 +99,7 @@ class HodgeLaplacian2DElementVectorProvider {
 
 /* SAM_LISTING_BEGIN_8 */
 template <lf::mesh::utils::MeshFunction MESH_FUNCTION>
-HodgeLaplacian2DElementVectorProvider<MESH_FUNCTION>::ElemVec
+typename HodgeLaplacian2DElementVectorProvider<MESH_FUNCTION>::ElemVec
 HodgeLaplacian2DElementVectorProvider<MESH_FUNCTION>::Eval(
     const lf::mesh::Entity &cell) {
   LF_VERIFY_MSG(cell.RefEl() == lf::base::RefEl::kTria(),
