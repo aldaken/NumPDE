@@ -110,6 +110,9 @@
     "LeastSquaresAdvection/",
     "FVMIsentropicEuler/",
     "TaylorHoodNonMonolithic/",
-    "HodgeLaplacian2D/"
+    "HodgeLaplacian2D/",
+    "MagDiffWire/",
+    "StokesStabP1FEM/",
+    "MagStat2D/"
   ]
 }

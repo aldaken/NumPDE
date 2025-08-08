@@ -43,13 +43,13 @@ std::vector<Eigen::Triplet<double>> computeA(const Eigen::VectorXd &mesh,
 template <typename FUNCTOR1>
 std::vector<Eigen::Triplet<double>> computeM(const Eigen::VectorXd &mesh,
                                              FUNCTOR1 &&gamma) {
-  // Nodes are indexed as 0=x_0 < x_1 < ... < x_N = 1
+  // Nodes are indexed as $0=x_0 < x_1 < ... < x_N = 1$
   unsigned N = mesh.size() - 1;
 
   // The basis tent functions spanning the space of continuous piecewise
   // linear polynomial satisfy the cardinal basis property with respect
   // to the nodes of the mesh. Using  the trapezoidal rule to approximate
-  // the integrals therefore lead to a diagonal (N+1) x (N+1) matrix
+  // the integrals therefore lead to a diagonal $(N+1) \times (N+1)$ matrix
   std::vector<Eigen::Triplet<double>> triplets;
   triplets.reserve(N + 1);
 
@@ -66,7 +66,7 @@ std::vector<Eigen::Triplet<double>> computeM(const Eigen::VectorXd &mesh,
 /* SAM_LISTING_BEGIN_3 */
 template <typename FUNCTOR1>
 Eigen::VectorXd computeRHS(const Eigen::VectorXd &mesh, FUNCTOR1 &&f) {
-  // Nodes are indexed as 0=x_0 < x_1 < ... < x_N = 1
+  // Nodes are indexed as $0=x_0 < x_1 < ... < x_N = 1$
   unsigned N = mesh.size() - 1;
   // Initializing right hand side vector
   Eigen::VectorXd rhs_vec = Eigen::VectorXd::Zero(N + 1);
@@ -84,7 +84,7 @@ Eigen::VectorXd computeRHS(const Eigen::VectorXd &mesh, FUNCTOR1 &&f) {
 template <typename FUNCTOR1, typename FUNCTOR2>
 Eigen::VectorXd solveA(const Eigen::VectorXd &mesh, FUNCTOR1 &&gamma,
                        FUNCTOR2 &&f) {
-  // Nodes are indexed as 0=x_0 < x_1 < ... < x_N = 1
+  // Nodes are indexed as $0=x_0 < x_1 < ... < x_N = 1$
   // Note: What is called N here, is M in the project description!
   unsigned N = mesh.size() - 1;
   // Initializations (notice initialization with zeros here)
@@ -108,7 +108,7 @@ Eigen::VectorXd solveA(const Eigen::VectorXd &mesh, FUNCTOR1 &&gamma,
   // Your code goes here
   //====================
 
-  // IV. Solve the LSE L*u = rhs_vec using an Eigen solver
+  // IV. Solve the LSE L*u = rhs\_vec using an Eigen solver
   //====================
   // Your code goes here
   //====================
@@ -124,7 +124,7 @@ Eigen::VectorXd solveA(const Eigen::VectorXd &mesh, FUNCTOR1 &&gamma,
 template <typename FUNCTOR1, typename FUNCTOR2>
 Eigen::VectorXd solveB(const Eigen::VectorXd &mesh, FUNCTOR1 &&alpha,
                        FUNCTOR2 &&f, double u0, double u1) {
-  // Nodes are indexed as 0=x_0 < x_1 < ... < x_N = 1
+  // Nodes are indexed as $0=x_0 < x_1 < ... < x_N = 1$
   unsigned N = mesh.size() - 1;
   // Initializations
   Eigen::VectorXd u(N + 1);                     // solution vec
@@ -147,7 +147,7 @@ Eigen::VectorXd solveB(const Eigen::VectorXd &mesh, FUNCTOR1 &&alpha,
   // Your code goes here
   //====================
 
-  // IV. Solve the LSE A*u = rhs_vec using an Eigen solver
+  // IV. Solve the LSE A*u = rhs\_vec using an built-in Eigen solver
   //====================
   // Your code goes here
   //====================
@@ -183,7 +183,7 @@ Eigen::VectorXd solveC(const Eigen::VectorXd &mesh, FUNCTOR1 &&alpha,
   // Your code goes here
   //====================
 
-  // IV. Solve the LSE A*u = rhs_vec using an Eigen solver
+  // IV. Solve the LSE A*u = rhs\_vec using an Eigen solver
   //====================
   // Your code goes here
   //====================
