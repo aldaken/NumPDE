@@ -365,9 +365,10 @@ void testCvgTaylorHood(unsigned int refsteps) {
                Eigen::Vector2d{x[1] * (-x2 + y2) / den, x[0] * (x2 - y2) / den};
   };
 
-  // Generate a small unstructured triangular mesh
+  // Generate a small unstructured triangular mesh of the unit square
   const std::shared_ptr<lf::mesh::Mesh> mesh_ptr =
       lf::mesh::test_utils::GenerateHybrid2DTestMesh(3, 1.0 / 3.0);
+  // Generate sequence of meshes by uniform regular refinement
   const std::shared_ptr<lf::refinement::MeshHierarchy> multi_mesh_p =
       lf::refinement::GenerateMeshHierarchyByUniformRefinemnt(mesh_ptr,
                                                               refsteps);

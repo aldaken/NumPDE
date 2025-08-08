@@ -88,7 +88,6 @@ class HodgeLaplacian2DElementVectorProvider {
   [[nodiscard]] bool isActive(const lf::mesh::Entity & /*cell*/) {
     return true;
   }
-  // Computation of element matrix $\VM_K$: two versions
   [[nodiscard]] ElemVec Eval(const lf::mesh::Entity &cell);
 
  private:
@@ -99,7 +98,7 @@ class HodgeLaplacian2DElementVectorProvider {
 
 /* SAM_LISTING_BEGIN_8 */
 template <lf::mesh::utils::MeshFunction MESH_FUNCTION>
-HodgeLaplacian2DElementVectorProvider<MESH_FUNCTION>::ElemVec
+typename HodgeLaplacian2DElementVectorProvider<MESH_FUNCTION>::ElemVec
 HodgeLaplacian2DElementVectorProvider<MESH_FUNCTION>::Eval(
     const lf::mesh::Entity &cell) {
   LF_VERIFY_MSG(cell.RefEl() == lf::base::RefEl::kTria(),
@@ -216,7 +215,7 @@ class MeshFunctionWF1 {
   Eigen::VectorXd coeffs_;
 };
 
-/** @brief Mesh function providing a proxy vector field for Whitney 1-forms in
+/** @brief Mesh function providing a proxy vector field for Whitney 0-forms in
  * 2D.
  *
  * Note that the monolithic Whitney FEM d.o.f. layout for the HL mixed
@@ -225,7 +224,7 @@ class MeshFunctionWF1 {
  * component, the second the Whitney 1-form expansion coefficients of the 1-form
  * component.
  *
- * Only the second part of the coefficient vector is used by objects of this
+ * Only the first part of the coefficient vector is used by objects of this
  * MeshFunction type.
  *
  */
@@ -240,7 +239,7 @@ class MeshFunctionWF0 {
                   "DofH must manage 1 dof/node and 1 dof/edge");
   }
 
-  // Evaluation operator: returns the values of the vectorfield in the space of
+  // Evaluation operator: returns the values of a function in the space of
   // Whitney 0-forms at a number of points inside a cell
   std::vector<double> operator()(const lf::mesh::Entity &cell,
                                  const Eigen::MatrixXd &local) const;

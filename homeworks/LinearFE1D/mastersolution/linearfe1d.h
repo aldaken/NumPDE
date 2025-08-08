@@ -69,13 +69,13 @@ std::vector<Eigen::Triplet<double>> computeA(const Eigen::VectorXd &mesh,
 template <typename FUNCTOR1>
 std::vector<Eigen::Triplet<double>> computeM(const Eigen::VectorXd &mesh,
                                              FUNCTOR1 &&gamma) {
-  // Nodes are indexed as 0=x_0 < x_1 < ... < x_N = 1
+  // Nodes are indexed as $0=x_0 < x_1 < ... < x_N = 1$
   unsigned N = mesh.size() - 1;
 
   // The basis tent functions spanning the space of continuous piecewise
   // linear polynomial satisfy the cardinal basis property with respect
   // to the nodes of the mesh. Using  the trapezoidal rule to approximate
-  // the integrals therefore lead to a diagonal (N+1) x (N+1) matrix
+  // the integrals therefore lead to a diagonal $(N+1) \times (N+1)$ matrix
   std::vector<Eigen::Triplet<double>> triplets;
   triplets.reserve(N + 1);
 
@@ -108,7 +108,7 @@ std::vector<Eigen::Triplet<double>> computeM(const Eigen::VectorXd &mesh,
 /* SAM_LISTING_BEGIN_3 */
 template <typename FUNCTOR1>
 Eigen::VectorXd computeRHS(const Eigen::VectorXd &mesh, FUNCTOR1 &&f) {
-  // Nodes are indexed as 0=x_0 < x_1 < ... < x_N = 1
+  // Nodes are indexed as $0=x_0 < x_1 < ... < x_N = 1$
   unsigned N = mesh.size() - 1;
   // Initializing right hand side vector
   Eigen::VectorXd rhs_vec = Eigen::VectorXd::Zero(N + 1);
@@ -136,7 +136,7 @@ Eigen::VectorXd computeRHS(const Eigen::VectorXd &mesh, FUNCTOR1 &&f) {
 template <typename FUNCTOR1, typename FUNCTOR2>
 Eigen::VectorXd solveA(const Eigen::VectorXd &mesh, FUNCTOR1 &&gamma,
                        FUNCTOR2 &&f) {
-  // Nodes are indexed as 0=x_0 < x_1 < ... < x_N = 1
+  // Nodes are indexed as $0=x_0 < x_1 < ... < x_N = 1$
   // Note: What is called N here, is M in the project description!
   unsigned N = mesh.size() - 1;
   // Initializations (notice initialization with zeros here)
@@ -163,11 +163,11 @@ Eigen::VectorXd solveA(const Eigen::VectorXd &mesh, FUNCTOR1 &&gamma,
   // III. Enforce (zero) dirichlet boundary conditions
   // The B.C. are u(0) = u(N) = 0. The boundary nodes are indexed by 0
   // and N. We can therefore opt for the option of droping first and last rows
-  // and columns of L, along with the first and last entries of the rhs_vec.
+  // and columns of L, along with the first and last entries of the rhs\_vec.
   Eigen::SparseMatrix<double> L_reduced = L.block(1, 1, N - 1, N - 1);
   Eigen::VectorXd rhs_vec_reduced = rhs_vec.segment(1, N - 1);
 
-  // IV. Solve the LSE L*u = rhs_vec using an Eigen solver
+  // IV. Solve the LSE L*u = rhs\_vec using an Eigen solver
   Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>, Eigen::Lower> solver;
   solver.compute(L_reduced);
   if (solver.info() != Eigen::Success) {
@@ -186,7 +186,7 @@ Eigen::VectorXd solveA(const Eigen::VectorXd &mesh, FUNCTOR1 &&gamma,
 template <typename FUNCTOR1, typename FUNCTOR2>
 Eigen::VectorXd solveB(const Eigen::VectorXd &mesh, FUNCTOR1 &&alpha,
                        FUNCTOR2 &&f, double u0, double u1) {
-  // Nodes are indexed as 0=x_0 < x_1 < ... < x_N = 1
+  // Nodes are indexed as $0=x_0 < x_1 < ... < x_N = 1$
   unsigned N = mesh.size() - 1;
   // Initializations
   Eigen::VectorXd u(N + 1);                     // solution vec
@@ -203,7 +203,7 @@ Eigen::VectorXd solveB(const Eigen::VectorXd &mesh, FUNCTOR1 &&alpha,
 
   // III. Enforce dirichlet boundary conditions
   // Proceeding as in solveA, we begin by dropping the first and last rows
-  // and columns of the galerkin matrix. The rhs_vec needs to be modified to
+  // and columns of the galerkin matrix. The rhs\_vec needs to be modified to
   // account for the non-homegenous Dirichlet boundary conditions. It is
   // modified using an offset function.
   Eigen::SparseMatrix<double> A_reduced = A.block(1, 1, N - 1, N - 1);
@@ -211,7 +211,7 @@ Eigen::VectorXd solveB(const Eigen::VectorXd &mesh, FUNCTOR1 &&alpha,
                                     A.block(1, 0, N - 1, 1) * u0 -
                                     A.block(1, N, N - 1, 1) * u1;
 
-  // IV. Solve the LSE A*u = rhs_vec using an Eigen solver
+  // IV. Solve the LSE A*u = rhs\_vec using an built-in Eigen solver
   Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
   solver.compute(A_reduced);
   if (solver.info() != Eigen::Success) {
@@ -254,7 +254,7 @@ Eigen::VectorXd solveC(const Eigen::VectorXd &mesh, FUNCTOR1 &&alpha,
   Eigen::VectorXd rhs_vec =
       computeRHS(mesh, [](double) -> double { return 1.0; });
 
-  // IV. Solve the LSE A*u = rhs_vec using an Eigen solver
+  // IV. Solve the LSE A*u = rhs\_vec using an Eigen solver
   Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
   solver.compute(L);
   if (solver.info() != Eigen::Success) {
