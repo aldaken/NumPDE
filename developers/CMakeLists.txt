@@ -115,4 +115,6 @@ add_subdirectory(HodgeLaplacian2D)
 add_subdirectory(MagDiffWire)
 add_subdirectory(StokesStabP1FEM)
 add_subdirectory(MagStat2D)
-
+add_subdirectory(AxisymmetricBVP)
+add_subdirectory(BlackBodyRadiation)
+add_subdirectory(MaxwellEvlTM)

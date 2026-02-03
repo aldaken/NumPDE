@@ -113,6 +113,9 @@
     "HodgeLaplacian2D/",
     "MagDiffWire/",
     "StokesStabP1FEM/",
-    "MagStat2D/"
+      "MagStat2D/",
+      "AxisymmetricBVP/",
+      "BlackBodyRadiation/",
+      "MaxwellEvlTM/"
   ]
 }
