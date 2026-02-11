@@ -19,6 +19,7 @@
 #include <cmath>
 #include <cstddef>
 #include <memory>
+#include <numbers>
 
 namespace MagDiffWire {
 
