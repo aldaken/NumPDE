@@ -47,6 +47,7 @@ clang_release/
 gcc_release/
 doc/doxygen/html
 Build/
+build*
 build/
 build_clang8/
 build_msvc/
