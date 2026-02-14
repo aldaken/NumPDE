@@ -17,7 +17,7 @@ Currently, only UNIX based operating systems are supported. Moreover, you need t
 This section is suited only for your own computer. To build the codes on the student computers of ETH see below. Open a terminal and type
 ```
 git clone https://gitlab.math.ethz.ch/ralfh/NPDERepo.git
-cd NPDERepo/
+cd NumPDE/
 mkdir build
 cd build/
 cmake ..
