@@ -16,7 +16,7 @@ Currently, only UNIX based operating systems are supported. Moreover, you need t
 ## Getting started
 This section is suited only for your own computer. To build the codes on the student computers of ETH see below. Open a terminal and type
 ```
-git clone https://gitlab.math.ethz.ch/ralfh/NPDERepo.git
+git clone https://github.com/erickschulz/NumPDE.git
 cd NumPDE/
 mkdir build
 cd build/
@@ -61,9 +61,9 @@ ssh -X <nethz_username>@slab1.ethz.ch
 where `<nethz_username>` has the be replaced by your ETH username. To set up your local repository on the student computers, type:
 ```
 cd /tmp
-git clone https://gitlab.math.ethz.ch/ralfh/NPDERepo.git
-mv NPDERepo ~
-cd ~/NPDERepo
+git clone https://github.com/erickschulz/NumPDE.git
+mv NumPDE ~
+cd ~/NumPDE
 mkdir build
 cd build
 export HUNTER_ROOT=/opt/libs/NumPDE
