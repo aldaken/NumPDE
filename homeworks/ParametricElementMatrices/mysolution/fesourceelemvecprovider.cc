@@ -48,6 +48,7 @@ Eigen::VectorXd FESourceElemVecProvider::Eval(const lf::mesh::Entity &cell) {
       // Your code goes here
       // ===================
 
+      break;
       /* SAM_LISTING_END_2 */
     }
       /* ERROR CASE WHERE THE CELL IS NEITHER A TRIANGLE NOR A QUADRILATERAL */

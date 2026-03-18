@@ -107,7 +107,6 @@ Eigen::VectorXd FESourceElemVecProvider::Eval(const lf::mesh::Entity &cell) {
             (0.5 / (1. + std::pow(0.5 * w(i) + 0.5 * w((i + 1) % 4), 2)));
       }
       element_vector *= 1. / 4.;
-      break;
 #else
 
       // ===================
@@ -115,6 +114,7 @@ Eigen::VectorXd FESourceElemVecProvider::Eval(const lf::mesh::Entity &cell) {
       // ===================
 
 #endif
+      break;
       /* SAM_LISTING_END_2 */
     }
       /* ERROR CASE WHERE THE CELL IS NEITHER A TRIANGLE NOR A QUADRILATERAL */
